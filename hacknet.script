@@ -1,0 +1,104 @@
+disableLog("ALL")
+var res = null;
+var cost = null;
+
+
+function myMoney() {
+    return getServerMoneyAvailable("home");
+}
+
+function upgradeHacknet() {
+    while (hacknet.numNodes() < numberofNodes) {
+        cost = hacknet.getPurchaseNodeCost();
+        while (myMoney() < cost) {
+            print("Need $" + cost + " . Have $" + myMoney());
+            sleep(3000);
+        }
+        res = hacknet.purchaseNode();
+        print("Purchased hacknet Node with index " + res);
+    };
+
+    for (var i = 0; i < numberofNodes; i++) {
+        while (hacknet.getNodeStats(i).level < maxHacknetLevel) {
+            cost = hacknet.getLevelUpgradeCost(i, 10);
+            while (myMoney() < cost) {
+                print("Need $" + cost + " . Have $" + myMoney());
+                sleep(3000);
+            }
+            res = hacknet.upgradeLevel(i, 10);
+            print("Upgraded Node :", i, " to LVL ", hacknet.getNodeStats(i).level, " ", res);
+        };
+    };
+
+    tprint("Stage ", stage, ": All nodes upgraded to level ", maxHacknetLevel);
+
+    for (var i = 0; i < numberofNodes; i++) {
+        while (hacknet.getNodeStats(i).ram < maxHacknetRAM) {
+            cost = hacknet.getRamUpgradeCost(i, 2);
+            while (myMoney() < cost) {
+                print("Need $" + cost + " . Have $" + myMoney());
+                sleep(3000);
+            }
+            res = hacknet.upgradeRam(i, 2);
+            print("Upgraded Node :", i, " to RAM ", hacknet.getNodeStats(i).ram, " ", res);
+        };
+    };
+
+    tprint("Stage ", stage, ": All nodes upgraded to ", maxHacknetRAM, " GB RAM");
+
+    for (var i = 0; i < numberofNodes; i++) {
+        while (hacknet.getNodeStats(i).cores < maxHacknetCores) {
+            cost = hacknet.getCoreUpgradeCost(i, 1);
+            while (myMoney() < cost) {
+                print("Need $" + cost + " . Have $" + myMoney());
+                sleep(3000);
+            }
+            res = hacknet.upgradeCore(i, 1);
+            print("Upgraded Node :", i, " to CORES ", hacknet.getNodeStats(i).cores, " ", res);
+        };
+    };
+
+    tprint("Stage ", stage, ": All nodes upgraded to ", maxHacknetCores, " cores");
+}
+
+
+var numberofNodes = 10;
+var maxNodes = 25;
+var maxHacknetLevel = 110;
+var maxHacknetRAM = 1;
+var maxHacknetCores = 1;
+var stage = 0;
+var stopStage = 6
+var args = [];
+
+
+if (args[0]) {
+    numberofNodes = args[0];
+    if (args[1]) {
+        maxNodes = args[1];
+    };
+};
+
+while (true) {
+    while (stage <= stopStage) {
+        tprint("Stage ", stage, " | Nodes ", numberofNodes, " | LVL ", maxHacknetLevel, " | RAM ", maxHacknetRAM, " | Cores ", maxHacknetCores);
+        upgradeHacknet();
+        stage = stage + 1;
+        maxHacknetLevel = maxHacknetLevel + 15;
+        maxHacknetRAM = maxHacknetRAM * 2;
+        maxHacknetCores = Math.round(maxHacknetCores * 1.5);
+        if (maxHacknetCores > 16) { maxHacknetCores = 16 };
+    }
+
+    //add more nodes now and reset
+    if (numberofNodes > maxNodes) {
+        tprint("Max Nodes reached exiting.");
+        exit(0);
+    };
+    numberofNodes = numberofNodes + 1;
+    maxHacknetLevel = 110;
+    maxHacknetRAM = 1;
+    maxHacknetCores = 1;
+    stage = 0;
+    stopStage = 6;
+}
