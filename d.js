@@ -34,6 +34,7 @@ export async function main(ns) {
 		return targets;
 	}
 
+
 	// deploy and gain root
 	let deployServers = discoverTargets();
 	// remove home server
