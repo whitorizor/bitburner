@@ -1,6 +1,12 @@
 /** @param {NS} ns **/
 export async function main(ns) {
 
+	function log() {
+		var logtime = new Date();
+		return "[" + logtime.getHours() + ":" + logtime.getMinutes() + ":" +  logtime.getSeconds() + "]"
+	}
+
+
 	function discoverTargets() {
 		let targets = [];
 		//let blacklist = ["home", "s1", "s2,", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15", "s16", "s17", "s18", "s19", "s20", "s21", "s22", "s23", "s24", "s25"];
@@ -17,9 +23,9 @@ export async function main(ns) {
 				//Do nothing => "continue"
 			} else {
 				targets.push(node);
-				ns.print("++ added: ", node);
+				ns.print(log(), " ++ added: ", node);
 				nextNodes = ns.scan(node);
-				ns.print(":: scanning: ", node);
+				ns.print(log(), " :: scanning: ", node);
 				for (let i = 0; i < nextNodes.length; ++i) {
 					stack.push(nextNodes[i]);
 				}
@@ -41,47 +47,47 @@ export async function main(ns) {
 	}
 
 	let hScriptMemUsage = ns.getScriptRam(myScript, "home");
-	ns.tprint("Current RAM usage of h.script: ", hScriptMemUsage);
+	ns.tprint(log(), " Current RAM usage of h.script: ", hScriptMemUsage);
 
 
 	// GAIN ROOT
 	for (let i = 0; i < deployServers.length; ++i) {
 		server = deployServers[i];
 
-		ns.tprint("---------------------- [", server, "] ----------------------");
+		ns.tprint(log(), " ---------------------- [", server, "] ----------------------");
 		if (ns.serverExists(server)) {
 
 			if (!ns.hasRootAccess(server)) {
-				ns.tprint("++ Gaining ROOT: ", server);
+				ns.tprint(log(), " ++ Gaining ROOT: ", server);
 				if (ns.getServerNumPortsRequired(server) == 0) {
-					ns.tprint("++ RequiredPorts 0, nuking...", server);
+					ns.tprint(log(), " ++ RequiredPorts 0, nuking...", server);
 					ns.nuke(server);
 				}
 
 				if (ns.getServerNumPortsRequired(server) == 1) {
-					ns.tprint("++ RequiredPorts = 1, nuking... ", server);
+					ns.tprint(log(), " ++ RequiredPorts = 1, nuking... ", server);
 					if (ns.fileExists("BruteSSH.exe", "home")) {
 						ns.brutessh(server);
 						ns.nuke(server);
 					} else {
-						ns.tprint("-- MISSING EXE[1].");
+						ns.tprint(log(), " -- MISSING EXE[1].");
 					}
 				}
 
 				if (ns.getServerNumPortsRequired(server) == 2) {
-					ns.tprint("++ RequiredPorts = 2, nuking... ", server);
+					ns.tprint(log(), " ++ RequiredPorts = 2, nuking... ", server);
 					if (ns.fileExists("BruteSSH.exe", "home") &&
 						ns.fileExists("FTPCrack.exe", "home")) {
 						ns.brutessh(server);
 						ns.ftpcrack(server);
 						ns.nuke(server);
 					} else {
-						ns.tprint("-- MISSING EXE[2].");
+						ns.tprint(log(), " -- MISSING EXE[2].");
 					}
 				}
 
 				if (ns.getServerNumPortsRequired(server) == 3) {
-					ns.tprint("++ RequiredPorts = 3, nuking...", server);
+					ns.tprint(log(), " ++ RequiredPorts = 3, nuking...", server);
 					if (ns.fileExists("BruteSSH.exe", "home") &&
 						ns.fileExists("FTPCrack.exe", "home") &&
 						ns.fileExists("relaySMTP.exe", "home")) {
@@ -90,12 +96,12 @@ export async function main(ns) {
 						ns.relaysmtp(server);
 						ns.nuke(server);
 					} else {
-						ns.tprint("-- MISSING EXE[3].");
+						ns.tprint(log(), " -- MISSING EXE[3].");
 					}
 				}
 
 				if (ns.getServerNumPortsRequired(server) == 4) {
-					ns.tprint("++ RequiredPorts = 4, nuking...", server);
+					ns.tprint(log(), " ++ RequiredPorts = 4, nuking...", server);
 					if (ns.fileExists("BruteSSH.exe", "home") &&
 						ns.fileExists("FTPCrack.exe", "home") &&
 						ns.fileExists("relaySMTP.exe", "home") &&
@@ -107,12 +113,12 @@ export async function main(ns) {
 						ns.httpworm(server);
 						ns.nuke(server);
 					} else {
-						ns.tprint("-- MISSING EXE[4].");
+						ns.tprint(log(), " -- MISSING EXE[4].");
 					}
 				}
 
 				if (ns.getServerNumPortsRequired(server) == 5) {
-					ns.tprint("++ RequiredPorts = 5, nuking...", server);
+					ns.tprint(log(), " ++ RequiredPorts = 5, nuking...", server);
 					if (ns.fileExists("BruteSSH.exe", "home") &&
 						ns.fileExists("FTPCrack.exe", "home") &&
 						ns.fileExists("relaySMTP.exe", "home") &&
@@ -126,34 +132,34 @@ export async function main(ns) {
 						ns.sqlinject(server);
 						ns.nuke(server);
 					} else {
-						ns.tprint("-- MISSING EXE[5].");
+						ns.tprint(log(), " -- MISSING EXE[5].");
 					}
 				}
 
 
 			} else {
-				ns.tprint("Root [OK]");
+				ns.tprint(log(), " Root [OK]");
 			}
 
 			// copy executing script
 			await ns.scp(myScript, server);
 
 			let res = ns.killall(server);
-			ns.print("Killingresult: ", res);
+			ns.print(log(), " Killingresult: ", res);
 
 			if (ns.getServerMaxRam(server) < hScriptMemUsage) {
-				ns.tprint("-- Not enough RAM to run h.js.");
+				ns.tprint(log(), " -- Not enough RAM to run h.js.");
 			} else {
 				if (ns.hasRootAccess(server)) {
 					let threads = (ns.getServerMaxRam(server) / hScriptMemUsage) - 0.5;
 					ns.exec(myScript, server, threads);
-					ns.tprint("++ HACKING with [", myScript , "] on [", server, "] with -t ", Math.round(threads));
+					ns.tprint(log(), " ++ HACKING with [", myScript , "] on [", server, "] with -t ", Math.round(threads));
 				} else {
-					ns.tprint("-- NO Root.");
+					ns.tprint(log(), " -- NO Root.");
 				}
 			}
 		} else {
-			ns.tprint("!! [", server, "] not found.");
+			ns.tprint(log(), " !! [", server, "] not found.");
 		}
 	}
 }

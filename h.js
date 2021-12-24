@@ -23,15 +23,20 @@ export async function main(ns) {
 				//Do nothing => "continue"
 			} else {
 				targets.push(node);
-				ns.print("++ added: ", node);
+				ns.print(log(), " ++ added: ", node);
 				nextNodes = ns.scan(node);
-				ns.print(":: scanning: ", node);
+				ns.print(log(), " :: scanning: ", node);
 				for (let i = 0; i < nextNodes.length; ++i) {
 					stack.push(nextNodes[i]);
 				}
 			}
 		}
 		return targets;
+	}
+
+	function log() {
+		var logtime = new Date();
+		return "[" + logtime.getHours() + ":" + logtime.getMinutes() + ":" +  logtime.getSeconds() + "]"
 	}
 
 	// RANDOMIZE server ARRAY to avoid DDOSing one target
@@ -78,13 +83,13 @@ export async function main(ns) {
 	foundnodes = discoverTargets();
 	foundnodes = shuffleArray(foundnodes);
 
-	ns.print(":: STARTING @ ", ns.getHostname(), " in ", startTimer, "ms");
-	ns.print(":: (randomized) TARGETS: ", foundnodes);
+	ns.print(log(), " :: STARTING @ ", ns.getHostname(), " in ", startTimer, "ms");
+	ns.print(log(), " :: (randomized) TARGETS: ", foundnodes);
 
 	if (ns.args[0]) {
 		foundnodes = [];
 		foundnodes[0] = ns.args[0];
-		ns.print(":: (OVERWRITE) SINGLE TARGET ATTACK: ", foundnodes);
+		ns.print(log(), " :: (OVERWRITE) SINGLE TARGET ATTACK: ", foundnodes);
 	}
 
 
@@ -110,12 +115,12 @@ export async function main(ns) {
 		myGrowTime = Math.round(ns.getGrowTime(blob) / 1000);
 	};
 
-	function printServerData(blob) {
+	function printServerData(blob, blub) {
 		//prints the current server metric
-		ns.tprint(":: [", ns.getHostname(), "], => ", blob, "	[", requiredHackLevel, "] ",
-			"	$[%:", moneyPercentage.toPrecision(2), " A:", (availableMoney / 1000000).toPrecision(5), "M M:", (maxMoney / 1000000).toPrecision(5), "M] ",
-			"	#SEC[T:", securityThresh.toPrecision(2), " L:", serverSecurityLevel.toPrecision(2), " M:", serverMinSecurityLevel.toPrecision(2), "] ",
-			"	Time[W:", myWeakenTime, " G:", myGrowTime, " H:", myHackTime, "]");
+		ns.print(log(), " :: [", ns.getHostname(), "], => ", blob, "	[", requiredHackLevel, "] ",
+			"	$ [ %:", moneyPercentage.toPrecision(2), " A:", (availableMoney / 1000000).toPrecision(5), "M M:", (maxMoney / 1000000).toPrecision(5), "M ] ",
+			"	SEC [ T:", securityThresh.toPrecision(2), " L:", serverSecurityLevel.toPrecision(2), " M:", serverMinSecurityLevel.toPrecision(2), " ] ",
+			"	Time [ W:", myWeakenTime, " G:", myGrowTime, " H:", myHackTime, " ]");
 	}
 
 
@@ -127,62 +132,42 @@ export async function main(ns) {
 			//calc & reset stats for current target server
 			gatherServerData(server);
 
-			//			hasRoot = ns.hasRootAccess(server);
-			//			maxMoney = ns.getServerMaxMoney(server);
-			//			availableMoney = ns.getServerMoneyAvailable(server);
-			//			moneyThresh = ns.getServerMaxMoney(server) * moneyMulti;
-			//			moneyPercentage = ns.getServerMoneyAvailable(server) / ns.getServerMaxMoney(server);
-			//			serverSecurityLevel = ns.getServerSecurityLevel(server);
-			//			serverMinSecurityLevel = ns.getServerMinSecurityLevel(server);
-			//			securityThresh = ns.getServerMinSecurityLevel(server) + securityStatic;
-			//			requiredHackLevel = ns.getServerRequiredHackingLevel(server);
-			//			playerHackLevel = ns.getHackingLevel();
-			//
-			//			//for displying purposes only could be removed to save RAM
-			//			myHackTime = Math.round(ns.getHackTime(server) / 1000);
-			//			myWeakenTime = Math.round(ns.getWeakenTime(server) / 1000);
-			//			myGrowTime = Math.round(ns.getGrowTime(server) / 1000);
-
 			if (maxMoney != 0) {
 				if (hasRoot) {
-//					ns.print(":: ", server, "[", requiredHackLevel, "] ",
-//						"$[", moneyPercentage, "|", availableMoney / 1000000, "M|", maxMoney / 1000000, "M] ",
-//						"#SEC[", securityThresh, "|", serverSecurityLevel, "|", securityThresh, "] ",
-//						"Time[W:", myWeakenTime, "|G:", myGrowTime, "|H:", myHackTime, "]");
 					if ((requiredHackLevel <= playerHackLevel) && (serverSecurityLevel > securityThresh)) {
 						printServerData(server);
-						ns.print("++ Weaken in:", myWeakenTime, "s");
+						ns.print(log(), " ++ Weaken in:", myWeakenTime, "s");
 						res = await ns.weaken(server);
-						ns.print(":: Weaken Result: ", res);
+						ns.print(log(), " :: Weaken Result: ", res);
 						gatherServerData(server);
 						printServerData(server);
 					} else if ((requiredHackLevel <= playerHackLevel) && (availableMoney < moneyThresh)) {
 						printServerData(server);
-						ns.print("++ Grow in: ", myGrowTime, "s");
+						ns.print(log(), " ++ Grow in: ", myGrowTime, "s");
 						res = await ns.grow(server);
-						ns.print(":: Grow Result: ", res);
+						ns.print(log(), " :: Grow Result: ", res);
 						gatherServerData(server);
 						printServerData(server);
 					} else {
 						if (requiredHackLevel <= playerHackLevel) {
 							printServerData(server);
-							ns.print("++ H@cking in: ", myHackTime, "s")
+							ns.print(log(), " ++ H@cking in: ", myHackTime, "s")
 							res = await ns.hack(server);
-							ns.print(":: Hack Result: ", res / 1000000, "M");
+							ns.print(log(), " :: Hack Result: ", res / 1000000, "M");
 							gatherServerData(server);
 							printServerData(server);
 						} else {
-							ns.print("!! HackingLevel too low. [", playerHackLevel, " | ", requiredHackLevel, "]	", server);
+							ns.print(log(), " !! HackingLevel too low. [", playerHackLevel, " | ", requiredHackLevel, "]	", server);
 						}
 					}
 				} else {
-					ns.print("!! No ROOT - skipping [", server, "]");
+					ns.print(log(), " !! No ROOT - skipping [", server, "]");
 				}
 			} else {
-				ns.print("!! No $$$ skipping [", server, "]");
+				ns.print(log(), " !! No $$$ skipping [", server, "]");
 			}
 		}
 		await ns.sleep(100);
-		ns.print(":: loopend ::");
+		ns.print(log(), " :: loopend ::");
 	}
 }
